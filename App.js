@@ -1,20 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import LoginScreen from './src/components/LoginScreen';
+import RegisterScreen from './src/components/RegisterScreen';
+import {initializeApp} from 'firebase/app';
+import firebaseConfig from './src/components/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {getReactNativePersistence, initializeAuth} from 'firebase/auth';
+import ProductScreen from './src/components/ProductScreen';
+
+const app = initializeApp(firebaseConfig);
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
+initializeApp(firebaseConfig);
+
+const Tab = createBottomTabNavigator();
+const AuthStack = createStackNavigator();
+const AppStack = createStackNavigator();
+
+const AuthStackScreen = () => {
+  return (
+    <AuthStack.Navigator>
+      <AuthStack.Screen name="Login" component={LoginScreen}/>
+      <AuthStack.Screen name="Register" component={RegisterScreen}/>
+    </AuthStack.Navigator>
+  );
+};
+
+const AppStackScreen = () => {
+  return (
+    <AppStack.Navigator>
+      <AppStack.Screen name="Home" component={ProductScreen}
+                       options={{headerShown: false}}/>
+    </AppStack.Navigator>
+  );
+};
+
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <AppStack.Navigator>
+        <AppStack.Screen name="Auth" component={AuthStackScreen}
+                         options={{headerShown: false}}/>
+        <AppStack.Screen name="App" component={AppStackScreen}
+                         options={{headerShown: false}}/>
+      </AppStack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
