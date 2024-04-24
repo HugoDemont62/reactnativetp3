@@ -1,35 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, Text } from 'react-native';
-import { Card, Title, Paragraph } from 'react-native-paper';
+import React, {useEffect, useState} from 'react';
+import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Card, Title} from 'react-native-paper';
+import SearchBar from './SearchBar';
 
 const ProductScreen = () => {
   const [products, setProducts] = useState([]);
+  const [searchValue, setSearchValue] = useState('');
 
   useEffect(() => {
-    fetch('https://fakestoreapi.com/products')
-      .then(response => response.json())
-      .then(data => setProducts(data));
+    fetch('https://fakestoreapi.com/products').
+      then(response => response.json()).
+      then(data => setProducts(data));
   }, []);
 
+  const filteredProducts = products.filter(product =>
+    product.title.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
   const addToCart = (item) => {
-    // Logic to add item to cart
+    console.log('Added to cart:', item);
   };
 
   return (
     <View style={styles.container}>
+      <SearchBar value={searchValue} onChangeText={setSearchValue}/>
       <FlatList
-        data={products}
+        data={filteredProducts}
         keyExtractor={item => item.id.toString()}
         numColumns={2}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <View style={styles.cardContainer}>
             <Card style={styles.card}>
-              <Card.Cover source={{ uri: item.image }} />
+              <Card.Cover source={{uri: item.image}}/>
               <Card.Content>
-                <Title>{item.title}</Title>
+                <Title style={styles.title}>{item.title}</Title>
               </Card.Content>
-              <Card.Actions>
-                <TouchableOpacity style={styles.button} onPress={() => addToCart(item)}>
+              <Card.Actions style={styles.cardActions}>
+                <TouchableOpacity style={styles.button}
+                                  onPress={() => addToCart(item)}>
                   <Text style={styles.buttonText}>Add to cart</Text>
                 </TouchableOpacity>
               </Card.Actions>
@@ -56,6 +64,13 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 14,
+  },
+  cardActions: {
+    justifyContent: 'center',
   },
   button: {
     backgroundColor: '#000',
