@@ -23,12 +23,12 @@ const RegisterScreen = ({navigation}) => {
 
   const handleChangeEmail = (email) => {
     setEmail(email);
-    setEmailError(''); // reset the error message
+    setEmailError('');
   };
 
   const handleChangePassword = (password) => {
     setPassword(password);
-    setPasswordError(''); // reset the error message
+    setPasswordError('');
   };
 
   const handleRegister = () => {
@@ -46,7 +46,7 @@ const RegisterScreen = ({navigation}) => {
         const user = userCredential.user;
         updateProfile(user, {displayName: username}).then(() => {
           console.log('Username updated successfully');
-          navigation.navigate('App', {screen: 'Accueil'});
+          navigation.navigate('App');
           setEmail('');
           setPassword('');
           setConfirmPassword('');

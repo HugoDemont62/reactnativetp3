@@ -105,7 +105,7 @@ const LoginScreen = ({navigation}) => {
   );
 };
 
-const styles= StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     padding: 20,
@@ -144,6 +144,10 @@ const styles= StyleSheet.create({
   errorText: {
     color: '#000',
     marginBottom: 10,
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
 });
 
