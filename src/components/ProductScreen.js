@@ -2,28 +2,56 @@ import React, {useEffect, useState} from 'react';
 import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Card, Title} from 'react-native-paper';
 import SearchBar from './SearchBar';
+import {getDatabase, off, onValue, ref, set} from 'firebase/database';
+import {getAuth} from 'firebase/auth';
 
-const ProductScreen = () => {
+const ProductScreen = ({navigation}) => {
   const [products, setProducts] = useState([]);
   const [searchValue, setSearchValue] = useState('');
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
+
+  const db = getDatabase();
+  const userId = getAuth().currentUser.uid;
+  const cartRef = ref(db, 'carts/' + userId);
 
   useEffect(() => {
     fetch('https://fakestoreapi.com/products').
       then(response => response.json()).
       then(data => setProducts(data));
+
+    const listener = onValue(cartRef, (snapshot) => {
+      const data = snapshot.val();
+      setCartItems(data ? data.products : []);
+    });
+
+    return () => off(cartRef, listener);
   }, []);
 
   const filteredProducts = products.filter(product =>
-    product.title.toLowerCase().includes(searchValue.toLowerCase())
+    product.title.toLowerCase().includes(searchValue.toLowerCase()),
   );
 
   const addToCart = (item) => {
-    console.log('Added to cart:', item);
+    const newCartItems = [...cartItems, item];
+    setCartItems(newCartItems);
+
+    set(cartRef, {
+      products: newCartItems,
+    });
+
+    setCartItemCount(cartItemCount + 1);
+    console.log('Product added to cart:', item);
   };
 
   return (
     <View style={styles.container}>
-      <SearchBar value={searchValue} onChangeText={setSearchValue}/>
+      <SearchBar
+        value={searchValue}
+        onChangeText={setSearchValue}
+        cartItemCount={cartItemCount}
+        onCartPress={() => navigation.navigate('CartScreen')}
+      />
       <FlatList
         data={filteredProducts}
         keyExtractor={item => item.id.toString()}

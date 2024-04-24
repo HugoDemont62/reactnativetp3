@@ -9,6 +9,7 @@ import firebaseConfig from './src/components/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getReactNativePersistence, initializeAuth} from 'firebase/auth';
 import ProductScreen from './src/components/ProductScreen';
+import CartScreen from './src/components/CartScreen';
 
 const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app, {
@@ -35,6 +36,7 @@ const AppStackScreen = () => {
     <AppStack.Navigator>
       <AppStack.Screen name="Home" component={ProductScreen}
                        options={{headerShown: false}}/>
+      <AppStack.Screen name="CartScreen" component={CartScreen} />
     </AppStack.Navigator>
   );
 };
