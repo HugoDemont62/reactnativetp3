@@ -1,57 +1,79 @@
 import React, {useEffect, useState} from 'react';
-import {FlatList, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
-import {getDatabase, off, onValue, ref} from 'firebase/database';
+import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {getDatabase, off, onValue, ref, set} from 'firebase/database';
 import {getAuth} from 'firebase/auth';
 import {Card, Title} from 'react-native-paper';
 
 const CartScreen = () => {
-  const [cart, setCart] = useState([]);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+  const userId = getAuth().currentUser.uid;
+  const db = getDatabase();
 
   useEffect(() => {
-    const db = getDatabase();
     const userId = getAuth().currentUser.uid;
     const cartRef = ref(db, 'carts/' + userId);
 
     const listener = onValue(cartRef, (snapshot) => {
       const data = snapshot.val();
       setCartItems(data ? data.products : []);
-      setCartItemCount(data ? data.products.reduce((total, product) => total + product.quantity, 0) : 0);
+      setCartItemCount(data ? data.products.reduce(
+        (total, product) => total + product.quantity, 0) : 0);
     }, (error) => {
-      console.error("Error reading from Firebase: ", error);
+      console.error('Error reading from Firebase: ', error);
     });
-
     return () => off(cartRef, listener);
   }, []);
 
   const increaseQuantity = (item) => {
-    let newCart = [...cart];
-    const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === item.id);
+    let newCartItems = [...cartItems];
+    const existingItemIndex = newCartItems.findIndex(
+      cartItem => cartItem.id === item.id);
 
     if (existingItemIndex > -1) {
-      newCart[existingItemIndex].quantity += 1;
+      newCartItems[existingItemIndex].quantity += 1;
     }
 
-    setCart(newCart);
+    setCartItems(newCartItems);
+
+    set(ref(db, 'carts/' + userId), {
+      products: newCartItems,
+    }).catch((error) => {
+      console.error('Error writing to Firebase: ', error);
+    });
   };
 
   const decreaseQuantity = (item) => {
-    let newCart = [...cart];
-    const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === item.id);
+    let newCartItems = [...cartItems];
+    const existingItemIndex = newCartItems.findIndex(
+      cartItem => cartItem.id === item.id);
 
-    if (existingItemIndex > -1 && newCart[existingItemIndex].quantity > 1) {
-      newCart[existingItemIndex].quantity -= 1;
-    } else if (existingItemIndex > -1 && newCart[existingItemIndex].quantity === 1) {
-      newCart = newCart.filter(cartItem => cartItem.id !== item.id);
+    if (existingItemIndex > -1 && newCartItems[existingItemIndex].quantity >
+      1) {
+      newCartItems[existingItemIndex].quantity -= 1;
+    } else if (existingItemIndex > -1 &&
+      newCartItems[existingItemIndex].quantity === 1) {
+      newCartItems = newCartItems.filter(cartItem => cartItem.id !== item.id);
     }
 
-    setCart(newCart);
+    setCartItems(newCartItems);
+
+    set(ref(db, 'carts/' + userId), {
+      products: newCartItems,
+    }).catch((error) => {
+      console.error('Error writing to Firebase: ', error);
+    });
   };
 
   const clearCart = () => {
-    setCart([])
-  }
+    setCartItems([]);
+
+    set(ref(db, 'carts/' + userId), {
+      products: [],
+    }).catch((error) => {
+      console.error('Error writing to Firebase: ', error);
+    });
+  };
 
   return (
     <View>
@@ -59,7 +81,7 @@ const CartScreen = () => {
         <Text>Clear Cart</Text>
       </TouchableOpacity>
       <FlatList
-        data={cart}
+        data={cartItems }
         keyExtractor={item => item.id.toString()}
         numColumns={2}
         renderItem={({item}) => (
