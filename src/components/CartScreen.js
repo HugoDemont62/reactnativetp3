@@ -11,7 +11,6 @@ const CartScreen = () => {
   const db = getDatabase();
 
   useEffect(() => {
-    const userId = getAuth().currentUser.uid;
     const cartRef = ref(db, 'carts/' + userId);
 
     const listener = onValue(cartRef, (snapshot) => {
@@ -78,7 +77,7 @@ const CartScreen = () => {
   return (
     <View>
       <TouchableOpacity onPress={clearCart}>
-        <Text>Clear Cart</Text>
+        <Text style={styles.clearBtn}>Clear Cart</Text>
       </TouchableOpacity>
       <FlatList
         data={cartItems }
@@ -88,15 +87,17 @@ const CartScreen = () => {
           <View style={styles.cardContainer}>
             <Card style={styles.card}>
               <Card.Cover source={{uri: item.image}}/>
-              <Card.Content>
+              <Card.Content style={styles.cardContent}>
                 <Title style={styles.title}>{item.title}</Title>
                 <Text>Quantity: {item.quantity}</Text>
-                <TouchableOpacity onPress={() => increaseQuantity(item)}>
-                  <Text>+</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => decreaseQuantity(item)}>
-                  <Text>-</Text>
-                </TouchableOpacity>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity onPress={() => increaseQuantity(item)} style={styles.button}>
+                    <Text style={styles.buttonText}>+</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => decreaseQuantity(item)} style={styles.button}>
+                    <Text style={styles.buttonText}>-</Text>
+                  </TouchableOpacity>
+                </View>
               </Card.Content>
             </Card>
           </View>
@@ -107,15 +108,51 @@ const CartScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    padding: 20,
+    flex: 1,
+    justifyContent: 'center',
+  },
   cardContainer: {
     flex: 1,
     margin: 10,
   },
   card: {
-    width: 150,
+    flex: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 16,
+  },
+  clearBtn: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
+    backgroundColor: 'black',
+    color: 'red',
+    borderRadius: 5,
+    padding: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 60,
+    marginLeft: 10,
+  },
+  button: {
+    backgroundColor: 'black',
+    width: 25,
+    height: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 20,
   },
 });
 

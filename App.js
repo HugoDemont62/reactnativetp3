@@ -9,7 +9,11 @@ import CartScreen from './src/components/CartScreen';
 import {getApps, initializeApp} from 'firebase/app';
 import firebaseConfig from './src/components/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {getAuth, getReactNativePersistence, initializeAuth} from 'firebase/auth';
+import {
+  getAuth,
+  getReactNativePersistence,
+  initializeAuth,
+} from 'firebase/auth';
 
 if (!getApps().length) {
   initializeApp(firebaseConfig);
@@ -41,8 +45,9 @@ const AppStackScreen = () => {
   return (
     <AppStack.Navigator>
       <AppStack.Screen name="Home" component={ProductScreen}
-                       options={{headerShown: false}}/>
-      <AppStack.Screen name="CartScreen" component={CartScreen}/>
+                       options={{headerShown: true}}/>
+      <AppStack.Screen name="CartScreen" component={CartScreen}
+                       options={{headerShown: true}}/>
     </AppStack.Navigator>
   );
 };

@@ -46,7 +46,7 @@ const ProductScreen = ({navigation}) => {
     setCartItems(newCartItems);
 
     set(ref(db, 'carts/' + userId), {
-      products: newCartItems,
+        products: newCartItems,
     }).catch((error) => {
       console.error("Error writing to Firebase: ", error);
     });
