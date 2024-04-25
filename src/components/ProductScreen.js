@@ -23,6 +23,7 @@ const ProductScreen = ({navigation}) => {
     const listener = onValue(cartRef, (snapshot) => {
       const data = snapshot.val();
       setCartItems(data ? data.products : []);
+      setCartItemCount(data ? data.products.reduce((total, product) => total + product.quantity, 0) : 0);
     });
 
     return () => off(cartRef, listener);
@@ -33,11 +34,21 @@ const ProductScreen = ({navigation}) => {
   );
 
   const addToCart = (item) => {
-    const newCartItems = [...cartItems, item];
+    let newCartItems = [...cartItems];
+    const existingItemIndex = newCartItems.findIndex(cartItem => cartItem.id === item.id);
+
+    if (existingItemIndex > -1) {
+      newCartItems[existingItemIndex].quantity += 1;
+    } else {
+      newCartItems.push({ ...item, quantity: 1 });
+    }
+
     setCartItems(newCartItems);
 
-    set(cartRef, {
+    set(ref(db, 'carts/' + userId), {
       products: newCartItems,
+    }).catch((error) => {
+      console.error("Error writing to Firebase: ", error);
     });
 
     setCartItemCount(cartItemCount + 1);

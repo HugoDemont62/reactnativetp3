@@ -1,11 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {FlatList, StyleSheet, View, Text} from 'react-native';
+import {FlatList, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {getDatabase, off, onValue, ref} from 'firebase/database';
 import {getAuth} from 'firebase/auth';
 import {Card, Title} from 'react-native-paper';
 
 const CartScreen = () => {
   const [cart, setCart] = useState([]);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
     const db = getDatabase();
@@ -14,15 +16,48 @@ const CartScreen = () => {
 
     const listener = onValue(cartRef, (snapshot) => {
       const data = snapshot.val();
-      setCart(data ? data.products : []);
+      setCartItems(data ? data.products : []);
+      setCartItemCount(data ? data.products.reduce((total, product) => total + product.quantity, 0) : 0);
+    }, (error) => {
+      console.error("Error reading from Firebase: ", error);
     });
 
     return () => off(cartRef, listener);
   }, []);
 
+  const increaseQuantity = (item) => {
+    let newCart = [...cart];
+    const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === item.id);
+
+    if (existingItemIndex > -1) {
+      newCart[existingItemIndex].quantity += 1;
+    }
+
+    setCart(newCart);
+  };
+
+  const decreaseQuantity = (item) => {
+    let newCart = [...cart];
+    const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === item.id);
+
+    if (existingItemIndex > -1 && newCart[existingItemIndex].quantity > 1) {
+      newCart[existingItemIndex].quantity -= 1;
+    } else if (existingItemIndex > -1 && newCart[existingItemIndex].quantity === 1) {
+      newCart = newCart.filter(cartItem => cartItem.id !== item.id);
+    }
+
+    setCart(newCart);
+  };
+
+  const clearCart = () => {
+    setCart([])
+  }
+
   return (
     <View>
-      <Text>Nombre de produit : {cart.length}</Text>
+      <TouchableOpacity onPress={clearCart}>
+        <Text>Clear Cart</Text>
+      </TouchableOpacity>
       <FlatList
         data={cart}
         keyExtractor={item => item.id.toString()}
@@ -33,6 +68,13 @@ const CartScreen = () => {
               <Card.Cover source={{uri: item.image}}/>
               <Card.Content>
                 <Title style={styles.title}>{item.title}</Title>
+                <Text>Quantity: {item.quantity}</Text>
+                <TouchableOpacity onPress={() => increaseQuantity(item)}>
+                  <Text>+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => decreaseQuantity(item)}>
+                  <Text>-</Text>
+                </TouchableOpacity>
               </Card.Content>
             </Card>
           </View>
